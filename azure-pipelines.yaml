@@ -1,0 +1,36 @@
+trigger:
+  branches:
+    include:
+      - master
+      - develop
+pool:
+  vmImage: 'ubuntu-latest'
+
+resources:
+  containers:
+  - container: kube-deploy
+    image: nidhish/azure-cd:v1
+    endpoint: azure-cd
+
+stages:
+- stage: DockerBuild
+    - bash: scripts/build.sh
+      env:
+        DK_PASS: $(DK_PASS)
+      displayName:  Docker build
+
+- stage: Deployment
+  jobs:
+  - job: Deployment
+    strategy:
+      matrix:
+        DockerContainer:
+          containerResource: kube-deploy
+    container: $[ variables['containerResource'] ]
+
+    steps:
+    - bash: scripts/deploy.sh
+      env:
+        SVC_PRINCIPAL_ID: $(SVC_PRINCIPAL_ID)
+        SVC_PRINCIPAL_PASSWORD: $(SVC_PRINCIPAL_PASSWORD)
+      displayName:  Deployment task

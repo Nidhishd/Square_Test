@@ -1,0 +1,46 @@
+### Deployment manifest for nginx ###
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: dev
+  labels:
+    app: nginx
+    environment: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+      environment: dev
+  template:
+    metadata:
+      labels:
+        app: nginx
+        environment: dev
+    spec:
+      containers:
+      - name: nginx
+        image: nidhishd/nginx_nkd:v1
+        ports:
+        - containerPort: 80
+---
+
+### Service manifest for nginx ###
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: dev
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+    name: http
+  selector:
+    app: nginx
+    environment: dev
+  type: ClusterIP
